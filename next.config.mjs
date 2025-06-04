@@ -1,4 +1,26 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  reactStrictMode: true,
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '2mb'
+    }
+  },
+  turbopack: {
+    rules: {
+      // Turbopack rules here (if needed)
+    }
+  },
+  images: {
+    domains: ['localhost'],
+  },
+  webpack: (config) => {
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+    };
+    return config;
+  },
+}
 
-export default nextConfig;
+export default nextConfig
