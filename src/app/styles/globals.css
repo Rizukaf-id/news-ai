@@ -2,6 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  /* Custom styling for markdown content */
+  .prose h1 {
+    @apply text-3xl font-bold text-slate-900 border-b border-slate-200/80 pb-2 mb-6;
+  }
+  
+  .prose h2 {
+    @apply text-2xl font-semibold text-slate-800 mt-8 mb-4;
+  }
+  
+  .prose h3 {
+    @apply text-xl font-medium text-slate-700 mt-6 mb-3;
+  }
+  
+  .prose p {
+    @apply text-slate-600 leading-relaxed mb-4;
+  }
+  
+  .prose ul {
+    @apply mt-4 mb-4 space-y-2;
+  }
+  
+  .prose ul li {
+    @apply text-slate-600 ml-4;
+    @apply before:content-['•'] before:mr-2 before:text-blue-500;
+  }
+  
+  .prose blockquote {
+    @apply border-l-4 border-blue-200 bg-blue-50 p-4 my-6 rounded-r-lg;
+  }
+  
+  .prose blockquote p {
+    @apply text-blue-900 text-sm last:mb-0;
+  }
+  
+  .prose blockquote strong {
+    @apply text-blue-900 font-semibold;
+  }
+}
+
+/* Smooth transitions */
+* {
+  @apply transition-colors duration-200;
+}
+
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;

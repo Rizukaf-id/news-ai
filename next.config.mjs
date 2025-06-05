@@ -12,7 +12,8 @@ const nextConfig = {
     }
   },
   images: {
-    domains: ['localhost'],
+    domains: ['localhost', 'vercel.app'],
+    unoptimized: true
   },
   webpack: (config) => {
     config.resolve.fallback = {

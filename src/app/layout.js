@@ -1,8 +1,8 @@
 import './styles/globals.css'
 
 export const metadata = {
-  title: 'Learning Assistant',
-  description: 'Asisten pembelajaran interaktif',
+  title: 'News AI',
+  description: 'Asisten berita interaktif',
 }
 
 export default function RootLayout({ children }) {

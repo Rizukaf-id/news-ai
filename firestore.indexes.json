@@ -1,7 +1,7 @@
 {
   "indexes": [
     {
-      "collectionGroup": "chats",
+      "collectionGroup": "news_chats",
       "queryScope": "COLLECTION",
       "fields": [
         {
@@ -9,25 +9,11 @@
           "order": "ASCENDING"
         },
         {
-          "fieldPath": "updatedAt",
+          "fieldPath": "createdAt",
           "order": "DESCENDING"
         },
         {
           "fieldPath": "__name__",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "messages",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "userId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "timestamp",
           "order": "DESCENDING"
         }
       ]

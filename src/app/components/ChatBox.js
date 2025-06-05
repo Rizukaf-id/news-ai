@@ -34,24 +34,17 @@ export default function ChatBox() {
   useEffect(() => {
     const loadPreviousChat = async () => {
       if (!userId) return;
-      
-      try {
+        try {
         setIsLoading(true);
-        const history = await getChatHistory(userId);
         
-        // Always show the greeting message, then add history if it exists
+        // Only show the greeting message without loading history
         const greetingMessage = {
           type: 'bot',
-          content: '👋 Halo! Saya asisten pembelajaran Anda.\n\n### Apa yang bisa saya bantu?\nSaya bisa membantu Anda belajar berbagai topik dengan:\n- Penjelasan yang mudah dipahami\n- Contoh praktis dan relevan\n- Sumber belajar yang terverifikasi\n- Panduan langkah demi langkah\n\n### Mulai Belajar\nSilakan ketik pertanyaan atau topik yang ingin Anda pelajari.',
+          content: '👋 Halo! Saya asisten berita Anda.\n\n### Apa yang bisa saya bantu?\nSaya dapat membantu Anda menemukan dan merangkum berita terkini dengan:\n- Pencarian berdasarkan topik atau kata kunci\n- Ringkasan berita dari berbagai sumber\n- Link referensi ke artikel lengkap\n- Pembaruan berita real-time\n\n### Mulai Mencari\nSilakan ketik topik atau kata kunci berita yang ingin Anda cari.',
           timestamp: new Date().toISOString()
         };
         
-        if (history && history.length > 0) {
-          console.log('Chat history loaded:', history.length, 'messages');
-          setMessages([greetingMessage, ...history]);
-        } else {
-          setMessages([greetingMessage]);
-        }
+        setMessages([greetingMessage]);
       } catch (error) {
         console.error('Failed to load chat history:', error);
         // Show error message to user
@@ -90,7 +83,11 @@ export default function ChatBox() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message: userMessage }),
+        body: JSON.stringify({ 
+          message: userMessage,
+          userId,
+          sessionId 
+        }),
       });
 
       if (!response.ok) {
@@ -98,27 +95,24 @@ export default function ChatBox() {
       }
 
       const data = await response.json();
-      
-      const botMessage = {
+        const botMessage = {
         type: 'bot',
-        content: data.response.content || 'Maaf, saya tidak dapat memproses permintaan Anda.',
-        learningPath: data.response.learningPath || [],
-        references: data.response.references || [],
+        content: data.response.content,
+        references: data.response.references?.map(ref => ref.url) || [],
+        articles: data.response.references || [],
         timestamp: new Date().toISOString()
       };
 
       // Update messages state
-      setMessages([...newMessages, botMessage]);
-
-      // Save to chat history with normalized data
+      setMessages([...newMessages, botMessage]);      // Save to chat history
       await saveChat({
         userId,
         sessionId,
         message: userMessage,
         response: {
           content: botMessage.content,
-          learningPath: botMessage.learningPath,
           references: botMessage.references,
+          articles: botMessage.articles,
           timestamp: botMessage.timestamp
         },
         timestamp: botMessage.timestamp
@@ -139,57 +133,63 @@ export default function ChatBox() {
   };
   return (
     <div className="absolute inset-0 flex flex-col">
-      <div className="bg-white h-full flex-1 flex flex-col">
-        <div className="flex-1 overflow-y-auto px-6 py-4">
-          <div className="space-y-4">
+      <div className="h-full flex-1 flex flex-col">
+        {/* Chat Messages */}
+        <div className="flex-1 overflow-y-auto px-6 py-8">
+          <div className="space-y-6">
             {messages.map((message, index) => (
               <div
                 key={index}
                 className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'} w-full`}
               >
-                <div
-                  className={`${
-                    message.type === 'user'
-                      ? 'bg-blue-500 text-white ml-auto max-w-[70%] p-4 rounded-lg'
-                      : message.isError
-                        ? 'bg-red-50 border border-red-200 text-gray-800 max-w-[85%]'
-                        : 'w-full'
-                  }`}
-                >
-                  {message.type === 'bot' && message.content ? (
-                    <BotMessage message={message} />
-                  ) : (
-                    <div className="p-4 rounded-lg">
-                      {message.content}
-                    </div>
-                  )}
-                </div>
+                {message.type === 'user' ? (
+                  <div className="bg-gradient-to-br from-blue-600 to-blue-700 text-white px-4 py-3 rounded-2xl shadow-sm max-w-[70%]">
+                    {message.content}
+                  </div>
+                ) : (
+                  <BotMessage message={message} />
+                )}
               </div>
             ))}
             <div ref={messagesEndRef} className="h-4" />
           </div>
         </div>
 
-        <div className="border-t border-gray-200 bg-white py-4">
-          <div className="max-w-[1440px] w-full mx-auto px-6">
-            <form onSubmit={handleSubmit} className="flex gap-2">
+        {/* Input Area */}
+        <div className="border-t border-slate-200 bg-white py-4 px-6">
+          <div className="max-w-[1440px] w-full mx-auto">
+            <form onSubmit={handleSubmit} className="flex gap-3">
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                className="flex-1 p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Ketik pesan Anda..."
+                className="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl 
+                          focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
+                          transition-shadow duration-200"
+                placeholder="Ketik topik berita yang ingin dicari..."
                 disabled={isLoading}
                 autoComplete="off"
               />
               <button
                 type="submit"
-                className={`px-4 py-2 bg-blue-500 text-white rounded-lg ${
-                  isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'
-                }`}
+                className={`px-6 py-3 rounded-xl font-medium transition-all duration-200
+                  ${isLoading 
+                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
+                    : 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:shadow-md hover:shadow-blue-500/20'
+                  }`}
                 disabled={isLoading}
               >
-                Kirim
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    <span>Mencari...</span>
+                  </div>
+                ) : (
+                  <span>Cari Berita</span>
+                )}
               </button>
             </form>
           </div>
